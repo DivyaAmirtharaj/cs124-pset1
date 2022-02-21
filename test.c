@@ -15,6 +15,14 @@ Maintain two sets of vertices, visited and unvisited
 and at each step find the lowest edge weight between
 the two sets and select it, and add the corresponding 
 vertex to the visited set.
+
+- 
+- Adjacency list to store edges and weights
+
+Optimization:
+Introduce some upper limit on edge weight such that we 
+guarantee that Prim's won't search a weight that large
+so we can simply omit them from the heap
 */
 
 #include <stdio.h>
@@ -57,7 +65,6 @@ node* ListFind(int vertex, node* root);
 
 // MST Calculation
 float MSTfind(int numpoints, node* edges[numpoints]);
-float get_threshold(int numpoints, int dimension);
 float dist(point p1, point p2);
 void test(void);
 float largest_edge = 0;
@@ -85,51 +92,33 @@ int main(int argc, char* argv[]){
 	int numpoints = atoi(argv[2]);
 	int numtrials = atoi(argv[3]);
 	int dimension = atoi(argv[4]);
-	
-	largest_edge = 0;
-	float threshold = get_threshold(numpoints, dimension);
-
-	if(flag > 0)
-		printf("Threshold: %f\n", threshold);
-
+		
 	srand(time(NULL));
 	clock_t begin = clock();
-
-	// Edges is an array of adjacency lists
+    
+	// Create an array of adjacency lists to store the edge lengths for each vertex 
+    // where edges is the length of number of points
 	node* edges[numpoints];
 	point points[numpoints];
 	for(int i = 0; i < numpoints; i++){
 		edges[i] = createLinkedList();
-		if(edges[i] == NULL){
-			printf("Malloc failed on edges[%d]\n", i);
-		}
 	}
 
+    // initializes random points
 	int count = 0;
 	float total_weight = 0.0;
 	failures = 0;
 	while(count < numtrials){
-		// Generate numpoints random points
-		if(dimension > 0.0){ 
-			for(int i = 0; i < numpoints; i++){
+        for(int i = 0; i < numpoints; i++){
+            float* coordinates = malloc(sizeof(float)*dimension);
+            for(int j = 0; j < dimension; j++){
+                coordinates[j] = (float)rand() / (float)RAND_MAX;
+            }
+            points[i].dim = dimension;
+            points[i].xs = coordinates;	
+        }
 
-				float* coordinates = malloc(sizeof(float)*dimension);
-				
-				if(coordinates == NULL){ 
-					printf("Coordinate array could not be allocatd. i = %d\n", i);
-				}
-
-				for(int j = 0; j < dimension; j++){
-					coordinates[j] = (float)rand() / (float)RAND_MAX;
-				}
-				points[i].dim = dimension;
-				points[i].xs = coordinates;	
-			}
-		}
-
-		if(flag > 0)
-			printf("Generated Points\n");
-
+        // getting the distance between points (edge weight)
 		for(int i = 0; i < numpoints; i++){
 			for(int j = 0; j < numpoints; j++){
 				float tmp_dst = 0.0;
@@ -147,22 +136,10 @@ int main(int argc, char* argv[]){
 					tmp_dst = INT_MAX;
 				}
 
-				if(tmp_dst < threshold){
-					insertLinkedList(j, tmp_dst, edges[i]);
-					insertLinkedList(i, tmp_dst, edges[j]);
-				}
+				
+                insertLinkedList(j, tmp_dst, edges[i]);
+                insertLinkedList(i, tmp_dst, edges[j]);
 
-			}
-		}
-
-		if(flag > 0.0)
-			printf("Generated Edges\n");
-		
-		// Print Edge Lengths
-		if(flag > 2.0){
-			for(int i = 0; i < numpoints; i++){
-				printf("Edges from %d: ", i);
-				// print_lst(edges[i]);
 			}
 		}
 
@@ -173,10 +150,6 @@ int main(int argc, char* argv[]){
 			}
 		}
 
-		if(flag > 0.0)
-			printf("Freed Points\n");
-		if(flag > 0.0)
-			printf("Calculating MST...\n");
 		float weight = MSTfind(numpoints, edges);
 
 		// In case an MST could not be found
@@ -198,13 +171,8 @@ int main(int argc, char* argv[]){
 	}
 	clock_t end = clock();
 	float time_elapsed = (double)(end - begin) / CLOCKS_PER_SEC;
-	printf("Avg. weight, Avg. largest edge, numpoints, numtrials, dimension: \n%f, %f, %d, %d, %d\nTime elapsed: %f\n", 
-		    (total_weight / (numtrials - failures)), largest_edge / (numtrials - failures), numpoints, numtrials - failures, dimension, time_elapsed);
-	// Numpoints (an int may cause overflow when multiplied by itself - 1)
-
-	//printf("%f %d %d %d\n", (total_weight / (numtrials - failures)), numpoints, numtrials - failures, dimension);
-//	numpoints *= 2;
-//}
+	printf("Avg. weight, numpoints, numtrials, dimension: \n%f, %d, %d, %d\nTime elapsed: %f\n", 
+		    (total_weight / (numtrials - failures)), numpoints, numtrials - failures, dimension, time_elapsed);
 	return 0;
 
 }
@@ -216,25 +184,6 @@ float dist(point p1, point p2){
 		distance += (p1.xs[i] - p2.xs[i]) * (p1.xs[i] - p2.xs[i]); 
 	}
 	return sqrt(distance);
-}
-
-float get_threshold(int numpoints, int dimension){
-	if(numpoints < 2048){
-		if(dimension == 0){
-			return 1.0;
-		}
-		return sqrt(dimension);
-	}  
-	if(dimension == 0)
-		return powf(numpoints, -1.0 / 1.6614);
-	else if(dimension == 2)
-		return powf(numpoints, -1.0 / 2.6197);
-	else if(dimension == 3)
-		return powf(numpoints, -1.0 / 3.8692);
-	else if(dimension == 4)
-		return powf(numpoints, -1.0 / 5.4464);
-	else
-		return INT_MAX;
 }
 
 float MSTfind(int numpoints, node* edges[numpoints]){
@@ -314,63 +263,51 @@ float MSTfind(int numpoints, node* edges[numpoints]){
 }
 
 /***************************** Queue Management ******************************/
-node* insertQueue(int vertex, float distance, node* root){	
-	node* current = root;
-	node* new_node = malloc(sizeof(node));
 
-	if(new_node == NULL){
-		printf("Malloc on insertion failed\n");
+node* deleteMinQueue(node* root){
+	if(root->next != NULL){
+		node* minNode = root->next;
+		root->next = minNode->next;
+		return minNode;
+	}
+	else{
 		return NULL;
 	}
-
-	new_node->vertex = vertex;
-	new_node->dist = distance;
-
-	while(current->next != NULL && current->next->dist <= distance){
-		current = current->next;
-	}
-	new_node->next = current->next;
-	current->next = new_node;
-	return new_node;	
 }
 
-node* createQueue(){
+/************************* New implementation for Adjacency List *************************/
+typedef struct AdjListNode {
+    int edge_weight;
+    struct AdjListNode* next;
+} AdjListNode;
+ 
+// A structure to represent an adjacency list
+typedef struct AdjList {
+    struct AdjListNode* head;
+} AdjList;
+
+AdjListNode* newAdjListNode(int edge_weight)
+{
+    AdjListNode* start = (AdjListNode*)malloc(sizeof(AdjListNode));
+    start->edge_weight = INT_MIN;
+    start->next = NULL;
+    return start;
+}
+/************************* End of New implementation for Adjacency List *************************/
+
+
+/************************* Adjacency List Management *************************/
+node* createLinkedList(){
 	node* root = malloc(sizeof(node));
-	if(root == NULL){
-		printf("Queue couldn't be created\n");
-		return root;
-	}
 	root->next = NULL;
 	root->dist = INT_MIN;
 	return root;
 }
 
-node* deleteMinQueue(node* root){
-	if(root->next == NULL){
-		printf("Queue was Empty!\n");
-		return NULL;
-	}
-	else{
-		node* minNode = root->next;
-		root->next = minNode->next;
-		return minNode;
-	}
-}
-
-/************************* Adjacency List Management *************************/
-node* createLinkedList(){
-	return createQueue();
-}
-
 node* insertLinkedList(int vertex, float distance, node* root){
 	node* new_node = malloc(sizeof(node));
-	if(new_node == NULL){
-		printf("Malloc on insertion failed\n");
-		return NULL;
-	}
 	new_node->vertex = vertex;
 	new_node->dist = distance;
-
 	new_node->next = root->next;
 	root->next = new_node;
 	return new_node;
@@ -380,10 +317,6 @@ node* ListFind(int vertex, node* root){
 	node* current = root->next;
 	while(current != NULL && current->vertex != vertex){
 		current = current->next;
-	}
-	if(current == NULL){
-		//printf("Vertex %d was not in the list.\n", vertex);
-		return NULL;
 	}
 	return current;
 }
