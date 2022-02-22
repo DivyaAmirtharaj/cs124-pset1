@@ -1,29 +1,32 @@
+// C / C++ program for Prim's MST for adjacency list representation of graph
+
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct AdjListNode{
+// A structure to represent a node in adjacency list
+struct AdjListNode {
 	int dest;
 	int weight;
 	struct AdjListNode* next;
-}AdjListNode ;
+};
 
 // A structure to represent an adjacency list
-typedef struct AdjList {
-	AdjListNode* head; // pointer to head node of list
-} AdjList;
+struct AdjList {
+	struct AdjListNode* head; // pointer to head node of list
+};
 
 // A structure to represent a graph. A graph is an array of adjacency lists.
 // Size of array will be V (number of vertices in graph)
-typedef struct Graph {
+struct Graph {
 	int V;
-	AdjList* array;
-}Graph ;
+	struct AdjList* array;
+};
 
 // A utility function to create a new adjacency list node
-AdjListNode* newAdjListNode(int dest, int weight)
+struct AdjListNode* newAdjListNode(int dest, int weight)
 {
-	AdjListNode* newNode = (AdjListNode*)malloc(sizeof(AdjListNode));
+	struct AdjListNode* newNode = (struct AdjListNode*)malloc(sizeof(struct AdjListNode));
 	newNode->dest = dest;
 	newNode->weight = weight;
 	newNode->next = NULL;
@@ -62,43 +65,43 @@ void addEdge(struct Graph* graph, int src, int dest, int weight)
 }
 
 // Structure to represent a min heap node
-typedef struct MinHeapNode{
+struct MinHeapNode {
 	int v;
 	int key;
-}MinHeapNode ;
+};
 
 // Structure to represent a min heap
-typedef struct MinHeap{
+struct MinHeap {
 	int size; // Number of heap nodes present currently
 	int capacity; // Capacity of min heap
 	int* pos; // This is needed for decreaseKey()
-	MinHeapNode** array;
-}MinHeap ;
+	struct MinHeapNode** array;
+};
 
 // A utility function to create a new Min Heap Node
-MinHeapNode* newMinHeapNode(int v, int key)
+struct MinHeapNode* newMinHeapNode(int v, int key)
 {
-	MinHeapNode* minHeapNode = (MinHeapNode*)malloc(sizeof(MinHeapNode));
+	struct MinHeapNode* minHeapNode = (struct MinHeapNode*)malloc(sizeof(struct MinHeapNode));
 	minHeapNode->v = v;
 	minHeapNode->key = key;
 	return minHeapNode;
 }
 
 // A utilit function to create a Min Heap
-MinHeap* createMinHeap(int capacity)
+struct MinHeap* createMinHeap(int capacity)
 {
-	MinHeap* minHeap = (MinHeap*)malloc(sizeof(MinHeap));
+	struct MinHeap* minHeap = (struct MinHeap*)malloc(sizeof(struct MinHeap));
 	minHeap->pos = (int*)malloc(capacity * sizeof(int));
 	minHeap->size = 0;
 	minHeap->capacity = capacity;
-	minHeap->array = (MinHeapNode**)malloc(capacity * sizeof(MinHeapNode*));
+	minHeap->array = (struct MinHeapNode**)malloc(capacity * sizeof(struct MinHeapNode*));
 	return minHeap;
 }
 
 // A utility function to swap two nodes of min heap. Needed for min heapify
-void swapMinHeapNode(MinHeapNode** a, MinHeapNode** b)
+void swapMinHeapNode(struct MinHeapNode** a, struct MinHeapNode** b)
 {
-	MinHeapNode* t = *a;
+	struct MinHeapNode* t = *a;
 	*a = *b;
 	*b = t;
 }
@@ -106,7 +109,7 @@ void swapMinHeapNode(MinHeapNode** a, MinHeapNode** b)
 // A standard function to heapify at given idx
 // This function also updates position of nodes when they are swapped.
 // Position is needed for decreaseKey()
-void minHeapify(MinHeap* minHeap, int idx)
+void minHeapify(struct MinHeap* minHeap, int idx)
 {
 	int smallest, left, right;
 	smallest = idx;
@@ -136,22 +139,22 @@ void minHeapify(MinHeap* minHeap, int idx)
 }
 
 // A utility function to check if the given minHeap is ampty or not
-int isEmpty(MinHeap* minHeap)
+int isEmpty(struct MinHeap* minHeap)
 {
 	return minHeap->size == 0;
 }
 
 // Standard function to extract minimum node from heap
-MinHeapNode* extractMin(MinHeap* minHeap)
+struct MinHeapNode* extractMin(struct MinHeap* minHeap)
 {
 	if (isEmpty(minHeap))
 		return NULL;
 
 	// Store the root node
-	MinHeapNode* root = minHeap->array[0];
+	struct MinHeapNode* root = minHeap->array[0];
 
 	// Replace root node with last node
-	MinHeapNode* lastNode = minHeap->array[minHeap->size - 1];
+	struct MinHeapNode* lastNode = minHeap->array[minHeap->size - 1];
 	minHeap->array[0] = lastNode;
 
 	// Update position of last node
@@ -167,7 +170,7 @@ MinHeapNode* extractMin(MinHeap* minHeap)
 
 // Function to decrease key value of a given vertex v. This function
 // uses pos[] of min heap to get the current index of node in min heap
-void decreaseKey(MinHeap* minHeap, int v, int key)
+void decreaseKey(struct MinHeap* minHeap, int v, int key)
 {
 	// Get the index of v in heap array
 	int i = minHeap->pos[v];
@@ -190,11 +193,11 @@ void decreaseKey(MinHeap* minHeap, int v, int key)
 
 // A utility function to check if a given vertex
 // 'v' is in min heap or not
-int isInMinHeap(MinHeap* minHeap, int v)
+bool isInMinHeap(struct MinHeap* minHeap, int v)
 {
 	if (minHeap->pos[v] < minHeap->size)
-		return 1;
-	return 0;
+		return true;
+	return false;
 }
 
 // A utility function used to print the constructed MST

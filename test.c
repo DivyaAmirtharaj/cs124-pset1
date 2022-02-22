@@ -2,21 +2,13 @@
 Minimum Spanning Tree Algorithms 
 Prim's Algorithm
 
-1. Begin with a random node (S)
-2. Find the edge with the lowest weight out of S
-3. Now you have two nodes, find the edge with the lowest
-weight out of either node and that goes to an unvisited 
-node and select it
-4. Repeat for all nodes after
-
-
 Implementation:
 Maintain two sets of vertices, visited and unvisited
 and at each step find the lowest edge weight between
 the two sets and select it, and add the corresponding 
 vertex to the visited set.
 
-- 
+
 - Adjacency list to store edges and weights
 
 Optimization:
@@ -54,11 +46,8 @@ typedef struct heap {
 } heap;
 
 
-// Queue will manage the (ordered) priority queue in Prim's Algorithm
-node*  insertQueue(int vertex, float distance, node* root);
-node* deleteMinQueue(node* root);
-node* createQueue();
 // Edges will be stored as (unordered) adjacency lists
+node* deleteMinQueue(node* root);
 node*  insertLinkedList(int vertex, float distance, node* root);
 node* createLinkedList();
 node* ListFind(int vertex, node* root);
@@ -80,11 +69,14 @@ heap* createHeap();
 void insertHeap(int vertex, float distance, heap* root);
 heap_node* deleteHeapNode(heap* root);
 void fix(heap *root, int i);
-void print_heap(heap* root);
 
 int main(int argc, char* argv[]){
 	if(argc != 5){
 		printf("Please add inputs: flag, numpoints, numtrials, dimension");
+		return 1;
+	}
+	if(atoi(argv[4]) <= 0){
+		printf("Dimension should be a positive integer");
 		return 1;
 	}
 	// Set command line inputs
@@ -121,22 +113,18 @@ int main(int argc, char* argv[]){
         // getting the distance between points (edge weight)
 		for(int i = 0; i < numpoints; i++){
 			for(int j = 0; j < numpoints; j++){
+				printf("%d, %d\n", i, j);
 				float tmp_dst = 0.0;
 				node* tmp_node;
 				if(i == j){
 					tmp_dst = INT_MAX;
-				}
-				else if (dimension > 0){
-					tmp_dst = dist(points[i], points[j]);
-				}
-				else if (i < j){
-					tmp_dst = (float)rand() / (float)RAND_MAX;
+					printf("%f\n", tmp_dst);
 				}
 				else{
-					tmp_dst = INT_MAX;
+					tmp_dst = dist(points[i], points[j]);
+					printf("%f\n", tmp_dst);
 				}
 
-				
                 insertLinkedList(j, tmp_dst, edges[i]);
                 insertLinkedList(i, tmp_dst, edges[j]);
 
@@ -275,27 +263,6 @@ node* deleteMinQueue(node* root){
 	}
 }
 
-/************************* New implementation for Adjacency List *************************/
-typedef struct AdjListNode {
-    int edge_weight;
-    struct AdjListNode* next;
-} AdjListNode;
- 
-// A structure to represent an adjacency list
-typedef struct AdjList {
-    struct AdjListNode* head;
-} AdjList;
-
-AdjListNode* newAdjListNode(int edge_weight)
-{
-    AdjListNode* start = (AdjListNode*)malloc(sizeof(AdjListNode));
-    start->edge_weight = INT_MIN;
-    start->next = NULL;
-    return start;
-}
-/************************* End of New implementation for Adjacency List *************************/
-
-
 /************************* Adjacency List Management *************************/
 node* createLinkedList(){
 	node* root = malloc(sizeof(node));
@@ -408,12 +375,4 @@ void fix(heap *root, int i){
 		root->elements[smallest] = temp;
 		fix(root, smallest);
 	}
-}
-
-void print_heap(heap* root){
-	for(int i = 0; i < root->size; i++){
-		//	printf("%d, %p\n", i, root->elements[i]);
-		printf("%d, %p, %d, %d, %d, %f\n", i, root->elements[i], root->size, root->capacity, root->elements[i]->vertex, root->elements[i]->dist);
-	}
-	printf("\n");
 }

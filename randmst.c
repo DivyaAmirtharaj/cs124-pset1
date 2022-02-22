@@ -104,26 +104,26 @@ int main(int argc, char* argv[]){
 			printf("Malloc failed on edges[%d]\n", i);
 		}
 	}
-
 	int count = 0;
 	float total_weight = 0.0;
 	failures = 0;
 	while(count < numtrials){
 		// Generate numpoints random points
 		if(dimension > 0.0){ 
+            // printf("%d\n", sizeof(float)*dimension);
 			for(int i = 0; i < numpoints; i++){
-
 				float* coordinates = malloc(sizeof(float)*dimension);
-				
 				if(coordinates == NULL){ 
-					printf("Coordinate array could not be allocatd. i = %d\n", i);
+					//printf("Coordinate array could not be allocatd. i = %d\n", i);
 				}
 
 				for(int j = 0; j < dimension; j++){
+                    printf("This is i,j %d, %d\n", i, j);
 					coordinates[j] = (float)rand() / (float)RAND_MAX;
+                    printf("This is coordinates %f\n", coordinates[j]);
 				}
 				points[i].dim = dimension;
-				points[i].xs = coordinates;	
+				points[i].xs = coordinates;
 			}
 		}
 
@@ -146,6 +146,7 @@ int main(int argc, char* argv[]){
 				else{
 					tmp_dst = INT_MAX;
 				}
+                printf("Contents of edges are %d, %f\n", edges[i]->vertex, edges[i]->dist);
 
 				if(tmp_dst < threshold){
 					insertLinkedList(j, tmp_dst, edges[i]);
@@ -162,8 +163,8 @@ int main(int argc, char* argv[]){
 		if(flag > 2.0){
 			for(int i = 0; i < numpoints; i++){
 				printf("Edges from %d: ", i);
-				// print_lst(edges[i]);
-			}
+                printf("Contents of edges %d, %f\n", edges[i]->vertex, edges[i]->dist);
+            }
 		}
 
 		// Free points
