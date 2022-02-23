@@ -15,7 +15,16 @@ typedef struct vertex{
     float* location;
 } vertex;
 
+// Used for a heap node vs the node in graph generation
+typedef struct MinHeapNode{
+    
+}
 
+/**************** Prim's Algorithm *****************/
+
+nodeEdge* 
+ 
+/************* End of Prim's Algorithm *************/
 
 
 int main(int argc, char* argv[]){
