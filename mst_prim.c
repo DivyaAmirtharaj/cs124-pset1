@@ -1,5 +1,3 @@
-// C / C++ program for Prim's MST for adjacency list representation of graph
-
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,14 +36,12 @@ struct Graph* createGraph(int V)
 {
 	struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
 	graph->V = V;
-
 	// Create an array of adjacency lists. Size of array will be V
 	graph->array = (struct AdjList*)malloc(V * sizeof(struct AdjList));
 
 	// Initialize each adjacency list as empty by making head as NULL
 	for (int i = 0; i < V; ++i)
 		graph->array[i].head = NULL;
-
 	return graph;
 }
 
@@ -124,8 +120,8 @@ void minHeapify(struct MinHeap* minHeap, int idx)
 
 	if (smallest != idx) {
 		// The nodes to be swapped in min heap
-		MinHeapNode* smallestNode = minHeap->array[smallest];
-		MinHeapNode* idxNode = minHeap->array[idx];
+		struct MinHeapNode* smallestNode = minHeap->array[smallest];
+		struct MinHeapNode* idxNode = minHeap->array[idx];
 
 		// Swap positions
 		minHeap->pos[smallestNode->v] = idx;
@@ -193,11 +189,11 @@ void decreaseKey(struct MinHeap* minHeap, int v, int key)
 
 // A utility function to check if a given vertex
 // 'v' is in min heap or not
-bool isInMinHeap(struct MinHeap* minHeap, int v)
+int isInMinHeap(struct MinHeap* minHeap, int v)
 {
 	if (minHeap->pos[v] < minHeap->size)
-		return true;
-	return false;
+		return 1;
+	return 0;
 }
 
 // A utility function used to print the constructed MST

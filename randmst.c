@@ -16,6 +16,8 @@ typedef struct vertex{
 } vertex;
 
 
+
+
 int main(int argc, char* argv[]){
 	if(argc != 5){
 		printf("Please add inputs: flag, numpoints, numtrials, dimension");
@@ -55,3 +57,5 @@ int main(int argc, char* argv[]){
    /************************ End Set Graph ************************/
 }
 
+
+int primMST()
