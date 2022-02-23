@@ -1,0 +1,293 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <time.h>
+
+#define NUMVERTEX 6
+#define DIM 2
+
+
+
+// Used in adjacency list
+typedef struct nodeEdge{
+    int vertex;
+    float weight;
+    struct nodeEdge* next;
+} nodeEdge;
+
+typdef struct point{
+    
+}
+
+typedef struct nodeList{
+    struct nodeEdge* head;
+} nodeList;
+
+typedef struct graph{
+    int numVertices;
+    struct nodeList* array;
+} graph;
+
+// A utility function to create a new adjacency list node
+// struct nodeEdge* newNodeEdge(int dest, int weight)
+// {
+// 	struct nodeEdge* newNode = (struct nodeEdge*)malloc(sizeof(struct nodeEdge));
+// 	newNode->dest = dest;
+// 	newNode->weight = weight;
+// 	newNode->next = NULL;
+// 	return newNode;
+// }
+
+// A utility function that creates a graph of V vertices
+struct graph* createGraph(int numVertices)
+{
+    struct graph* graph = (struct graph*)malloc(sizeof(struct graph));
+    graph->numVertices = numVertices;
+    // Create an array of adjacency lists. Size of array will be V
+    graph->array = (struct nodeList*)malloc(numVertices * sizeof(struct nodeList));
+
+    // Initialize each adjacency list as empty by making head as NULL
+    for (int i = 0; i < numVertices; i++)
+        graph->array[i].head = NULL;
+    return graph;
+};
+
+// Adds an edge to an undirected graph
+// void addEdge(struct graph* graph, int src, int dest, int weight)
+// {
+// 	// Add an edge from src to dest. A new node is added to the adjacency
+// 	// list of src. The node is added at the beginning
+// 	struct AdjListNode* newNode = newAdjListNode(dest, weight);
+// 	newNode->next = graph->array[src].head;
+// 	graph->array[src].head = newNode;
+
+// 	// Since graph is undirected, add an edge from dest to src also
+// 	newNode = newAdjListNode(src, weight);
+// 	newNode->next = graph->array[dest].head;
+// 	graph->array[dest].head = newNode;
+// }
+
+
+
+// Used for a heap node vs the node in graph generation
+typedef struct heapNode{
+    int vertex;
+    float weight;
+} heapNode;
+
+// Define what a bi heap is
+typedef struct heap{
+    int size;
+    int capacity;
+    heapNode** heap_array;
+} heap;
+
+/**************** Heap *****************/
+// Actually build the min heap
+heap* buildMinHeap() {
+	heap* minHeap = (heap*)malloc(sizeof(heap));
+	minHeap->size = 0;
+	minHeap->capacity = 0;
+	minHeap->heap_array = (heapNode**)malloc(minHeap->capacity * sizeof(heapNode*));
+	return minHeap;
+}
+
+// Add a new node to the heap
+void addNode(int vertex, float weight, heap* init_heap){
+    if(init_heap->capacity != 0 && init_heap->capacity == init_heap->size){
+		init_heap->heap_array = realloc(init_heap->heap_array, (init_heap->capacity * 2) * sizeof(heapNode));
+		init_heap->capacity *= 2;
+		init_heap->size += 1;
+	}
+	else if(init_heap->size == 0){
+		init_heap->heap_array = malloc(sizeof(heapNode));
+		init_heap->size += 1;
+		init_heap->capacity += 1;
+	}
+	else{
+		init_heap->size += 1;
+	}
+	heapNode* addNode = (heapNode*)malloc(sizeof(heapNode));
+	addNode->vertex = vertex;
+	addNode->weight = weight;
+
+    int iterate_size = (init_heap->size - 1)/2;
+	while(iterate_size > 0 && addNode->weight < init_heap->heap_array[(iterate_size - 1)/2]->weight){
+		init_heap->heap_array[iterate_size] = init_heap->heap_array[(iterate_size - 1)/2]; 
+		iterate_size = (iterate_size - 1)/2;
+	}
+	init_heap->heap_array[iterate_size] = addNode;
+}
+
+// Min heap functions
+// 1. heapify %
+// 2. popMin %
+// 3. fix heap, either decrease a key, add a key at the end, or delete a key
+
+// Heapify
+void fixHeap(heap* minHeap, int x){
+	int left = 2*x+1;
+    int right = 2*x+2;
+    int smallest = x;
+    int parent = (x-1)/2;
+
+	if (left < minHeap->size && minHeap->heap_array[left]->weight < minHeap->heap_array[smallest]->weight)
+		smallest = left;
+
+	if (right < minHeap->size && minHeap->heap_array[right]->weight < minHeap->heap_array[smallest]->weight)
+		smallest = right;
+
+    if(smallest != x){
+		heapNode* temp = minHeap->heap_array[x];
+		minHeap->heap_array[x] = minHeap->heap_array[smallest];
+		minHeap->heap_array[smallest] = temp;
+		fixHeap(minHeap, smallest);
+	}
+}
+
+/*void decrease(heap* minHeap, int vertex, int weight)
+{
+	int i = minHeap->position[vertex];
+	minHeap->heap_array[i]->weight = weight;
+
+	while (i && minHeap->heap_array[i]->weight < minHeap->heap_array[(i - 1) / 2]->weight) {
+		// Swap this node with its parent
+		minHeap->position[minHeap->heap_array[i]->vertex] = (i - 1) / 2;
+		minHeap->position[minHeap->heap_array[(i - 1) / 2]->vertex] = i;
+        heapNode* n = *&minHeap->heap_array[i];
+        *&minHeap->heap_array[(i - 1) / 2] = n;
+		i = (i - 1) / 2;
+	}
+}*/
+
+// Pop minimium node
+heapNode* popMin(heap* init_heap){
+    heapNode* min = init_heap->heap_array[0];
+    init_heap->size = init_heap->size-1;
+    init_heap->heap_array[0] = init_heap->heap_array[init_heap->size];
+    fixHeap(init_heap, 0);
+    return min;
+}
+
+nodeEdge* findCurrNode(int vertex, nodeEdge* init_edge){
+	nodeEdge* curr_edge = init_edge->next;
+	while(curr_edge != NULL && curr_edge->vertex != vertex){
+		curr_edge = curr_edge->next;
+	}
+	if(curr_edge == NULL){
+		return NULL;
+	}
+	return curr_edge;
+}
+/************* End of Heap *************/
+
+
+/**************** Prim's Algorithm *****************/
+/*
+float prim(int numpoints, nodeEdge* edges[numpoints]){
+	heap* init_heap = buildMinHeap();
+	addNode(0, 0.0, init_heap);
+
+    float weights[numpoints];
+	int prev_node[numpoints];
+	uint8_t diff[numpoints];
+
+	// Initialize array  
+	for(int i = 0; i < numpoints; i++){
+		weights[i] = INT_MAX;
+		prev_node[i] = INT_MIN;
+		diff[i] = 1;
+	}
+	weights[0] = 0;
+    prev_node[0] = 0;
+    // initialize adjacency list
+
+    int size, count;
+    size = 1;
+    count = 0;
+	while(init_heap->size > 0){
+		heapNode* min = popMin(init_heap);
+		init_heap->size = init_heap->size-1;
+		
+		int v = min->vertex;
+		diff[v] = 0;
+		nodeEdge* node_curr = edges[v]->next;
+
+		while(node_curr){
+			int x = node_curr->vertex;
+			if(diff[x] && (node_curr->weight < weights[x])){
+				weights[x] = node_curr->weight;
+				prev_node[x] = v;
+				addNode(x, weights[x], init_heap);
+				size = size+1;
+			}
+			node_curr = node_curr->next;
+		}
+		count = count + 1;
+		free(min);
+	}
+
+	float tot_weight = 0.0;
+	//float largest_edge_used = 0.0;
+	int largest_index = -3;
+	for(int i = 0; i < numpoints; i++){
+		if (prev_node[i] < 0){
+			free(init_heap);
+            //increase the count of edges not in the mst
+			not_in_mst++;
+			return -1;
+		}
+		nodeEdge* temp_edge = findCurrNode(prev_node[i], edges[i]);
+		float temp_weight = temp_edge->weight;
+		tot_weight += temp_weight;
+	}
+	free(init_heap);
+	return tot_weight;
+}
+*/
+/************* End of Prim's Algorithm *************/
+
+int main(int argc, char* argv[]){
+	if(argc != 5){
+		printf("Please add inputs: flag, numpoints, numtrials, dimension");
+		return 1;
+	}
+	if(atoi(argv[4]) <= 0){
+		printf("Dimension should be a positive integer");
+		return 1;
+	}
+	// Set command line inputs
+	int flag = atoi(argv[1]);
+	int numpoints = atoi(argv[2]);
+	int numtrials = atoi(argv[3]);
+	int dimension = atoi(argv[4]);
+
+    /************************* Set Graph *************************/
+
+    struct graph* primGraph = createGraph(numpoints);
+    int length = numpoints * dimension;
+    float vertexLocs [length];
+
+    /*
+    Initialize set of points by looping through # of dimensions
+    and looping through number of points to set the value for
+    each point in the graph
+    */
+
+   // for each vertex in the graph, create a 
+    for (int i = 0; i < length; i += dimension)
+    {
+        for (int j = 0; j < dimension; j++){
+            vertexLocs[i + j] = rand() / (float) RAND_MAX;
+            printf("%f ", vertexLocs[i + j]);
+        }
+    }
+
+
+    /* 
+    Initialize set of edges by creating adjacency list and setting
+    the weight of each edge to the distance between the coordinates
+    (position is given in coordinates)
+    */
+   /************************ End Set Graph ************************/
+}
