@@ -14,7 +14,9 @@
         "stdlib.h": "c",
         "ios": "c",
         "bitset": "c",
-        "utility": "c"
+        "utility": "c",
+        "__node_handle": "c",
+        "iterator": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

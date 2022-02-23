@@ -19,30 +19,44 @@ typedef struct heapNode{
 typedef struct heap{
     int size;
     int capacity;
-    int* position;
     heapNode** heap_array;
 } heap;
 
 /**************** Heap *****************/
+// Actually build the min heap
+heap* buildMinHeap() {
+	heap* minHeap = (heap*)malloc(sizeof(heap));
+	minHeap->size = 0;
+	minHeap->capacity = 0;
+	minHeap->heap_array = (heapNode**)malloc(minHeap->capacity * sizeof(heapNode*));
+	return minHeap;
+}
 
 // Add a new node to the heap
-heapNode* addNode(int vertex, float weight)
-{
+void addNode(int vertex, float weight, heap* init_heap){
+    if(init_heap->capacity != 0 && init_heap->capacity == init_heap->size){
+		init_heap->heap_array = realloc(init_heap->heap_array, (init_heap->capacity * 2) * sizeof(heapNode));
+		init_heap->capacity *= 2;
+		init_heap->size += 1;
+	}
+	else if(init_heap->size == 0){
+		init_heap->heap_array = malloc(sizeof(heapNode));
+		init_heap->size += 1;
+		init_heap->capacity += 1;
+	}
+	else{
+		init_heap->size += 1;
+	}
 	heapNode* addNode = (heapNode*)malloc(sizeof(heapNode));
 	addNode->vertex = vertex;
 	addNode->weight = weight;
-	return addNode;
-}
 
-// Actually build the min heap
-heap* buildMinHeap()
-{
-	heap* minHeap = (heap*)malloc(sizeof(heap));
-	minHeap->position = (int*)malloc(capacity * sizeof(int));
-	minHeap->size = 0;
-	minHeap->capacity = capacity;
-	minHeap->heap_array = (heapNode**)malloc(capacity * sizeof(heapNode*));
-	return minHeap;
+    int iterate_size = (init_heap->size - 1)/2;
+	while(iterate_size > 0 && addNode->weight < init_heap->heap_array[(iterate_size - 1)/2]->weight){
+		init_heap->heap_array[iterate_size] = init_heap->heap_array[(iterate_size - 1)/2]; 
+		iterate_size = (iterate_size - 1)/2;
+	}
+	init_heap->heap_array[iterate_size] = addNode;
 }
 
 // Min heap functions
@@ -71,7 +85,7 @@ void fixHeap(heap* minHeap, int x){
 	}
 }
 
-void decrease(heap* minHeap, int vertex, int weight)
+/*void decrease(heap* minHeap, int vertex, int weight)
 {
 	int i = minHeap->position[vertex];
 	minHeap->heap_array[i]->weight = weight;
@@ -84,85 +98,94 @@ void decrease(heap* minHeap, int vertex, int weight)
         *&minHeap->heap_array[(i - 1) / 2] = n;
 		i = (i - 1) / 2;
 	}
-}
+}*/
 
 // Pop minimium node
-heapNode* popMin(heap* minHeap){
-	heapNode* root = minHeap->heap_array[0];
-	heapNode* prev = minHeap->heap_array[minHeap->size - 1];
-	minHeap->heap_array[0] = prev;
-	minHeap->position[root->vertex] = minHeap->size - 1;
-	minHeap->position[prev->vertex] = 0;
+heapNode* popMin(heap* init_heap){
+    heapNode* min = init_heap->heap_array[0];
+    init_heap->size = init_heap->size-1;
+    init_heap->heap_array[0] = init_heap->heap_array[init_heap->size];
+    fixHeap(init_heap, 0);
+    return min;
+}
 
-	// Check heap validity
-	--minHeap->size;
-	fixHeap(minHeap, 0);
-
-	return root;
+nodeEdge* findCurrNode(int vertex, nodeEdge* init_edge){
+	nodeEdge* curr_edge = init_edge->next;
+	while(curr_edge != NULL && curr_edge->vertex != vertex){
+		curr_edge = curr_edge->next;
+	}
+	if(curr_edge == NULL){
+		return NULL;
+	}
+	return curr_edge;
 }
 /************* End of Heap *************/
 
 
 /**************** Prim's Algorithm *****************/
-/*float prim(struct graph* input_graph)
-{
-	int v = numpoints; //(int v = graph->V) Get the number of vertices in graph
-	int parent[v]; // Array to store constructed MST
-	int weight[v]; // Key values used to pick minimum weight edge in cut
+/*
+float prim(int numpoints, nodeEdge* edges[numpoints]){
+	heap* init_heap = buildMinHeap();
+	addNode(0, 0.0, init_heap);
 
-	// finalHeap represents set E
-	heap* finalHeap = buildMinHeap(numpoints);
+    float weights[numpoints];
+	int prev_node[numpoints];
+	uint8_t diff[numpoints];
 
-	// Initialize min heap with all vertices. Key value of
-	// all vertices (except 0th vertex) is initially infinite
-	for (int v = 1; v < V; ++v) {
-		parent[v] = -1;
-		weight[v] = INT_MAX;
-		finalHeap->heap_array[v] = addNode(v, weight[v]);
-		finalHeap->position[v] = v;
+	// Initialize array  
+	for(int i = 0; i < numpoints; i++){
+		weights[i] = INT_MAX;
+		prev_node[i] = INT_MIN;
+		diff[i] = 1;
 	}
+	weights[0] = 0;
+    prev_node[0] = 0;
+    // initialize adjacency list
 
-	// Make key value of 0th vertex as 0 so that it
-	// is extracted first
-	weight[0] = 0;
-	finalHeap->heap_array[0] = addNode(0, weight[0]);
-	finalHeap->position[0] = 0;
+    int size, count;
+    size = 1;
+    count = 0;
+	while(init_heap->size > 0){
+		heapNode* min = popMin(init_heap);
+		init_heap->size = init_heap->size-1;
+		
+		int v = min->vertex;
+		diff[v] = 0;
+		nodeEdge* node_curr = edges[v]->next;
 
-	// Initially size of min heap is equal to V
-	finalHeap->size = numpoints;
-
-	// In the following loop, min heap contains all nodes
-	// not yet added to MST.
-	while (finalHeap->size = 0) {
-		// Extract the vertex with minimum key value
-		heapNode* heapNode = popMin(finalHeap);
-		int u = heapNode->v; // Store the extracted vertex number
-
-		// Traverse through all adjacent vertices of u (the extracted
-		// vertex) and update their key values
-		struct AdjListNode* pCrawl = graph->heap_array[u].head;
-		while (pCrawl != NULL) {
-			int v = pCrawl->dest;
-
-			// If v is not yet included in MST and weight of u-v is
-			// less than key value of v, then update key value and
-			// parent of v
-			if (isInMinHeap(minHeap, v) && pCrawl->weight < key[v]) {
-				key[v] = pCrawl->weight;
-				parent[v] = u;
-				decreaseKey(minHeap, v, key[v]);
+		while(node_curr){
+			int x = node_curr->vertex;
+			if(diff[x] && (node_curr->weight < weights[x])){
+				weights[x] = node_curr->weight;
+				prev_node[x] = v;
+				addNode(x, weights[x], init_heap);
+				size = size+1;
 			}
-			pCrawl = pCrawl->next;
+			node_curr = node_curr->next;
 		}
+		count = count + 1;
+		free(min);
 	}
 
-	// print edges of MST
-	printArr(parent, V);
+	float tot_weight = 0.0;
+	//float largest_edge_used = 0.0;
+	int largest_index = -3;
+	for(int i = 0; i < numpoints; i++){
+		if (prev_node[i] < 0){
+			free(init_heap);
+            //increase the count of edges not in the mst
+			not_in_mst++;
+			return -1;
+		}
+		nodeEdge* temp_edge = findCurrNode(prev_node[i], edges[i]);
+		float temp_weight = temp_edge->weight;
+		tot_weight += temp_weight;
+	}
+	free(init_heap);
+	return tot_weight;
 }
-
- 
+*/
 /************* End of Prim's Algorithm *************/
-
 
 int main(int argc, char* argv[]){
 	if(argc != 5){
