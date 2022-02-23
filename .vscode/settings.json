@@ -10,7 +10,11 @@
         "unordered_map": "c",
         "vector": "c",
         "string": "c",
-        "string_view": "c"
+        "string_view": "c",
+        "stdlib.h": "c",
+        "ios": "c",
+        "bitset": "c",
+        "utility": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }
