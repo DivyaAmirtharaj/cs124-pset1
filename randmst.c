@@ -128,7 +128,10 @@ float prim(int numpoints, nodeEdge* edges[numpoints]){
 	heap* init_heap = buildMinHeap();
 	addNode(0, 0.0, init_heap);
 
+    // dist: array[n] of weights
     float weights[numpoints];
+
+    // prev: array[n] of vertices
 	int prev_node[numpoints];
 	uint8_t diff[numpoints];
 
@@ -146,6 +149,7 @@ float prim(int numpoints, nodeEdge* edges[numpoints]){
     size = 1;
     count = 0;
 	while(init_heap->size > 0){
+        \\ v:=deletemin(h)
 		heapNode* min = popMin(init_heap);
 		init_heap->size = init_heap->size-1;
 		
