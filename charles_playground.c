@@ -61,7 +61,7 @@ void print_lst(nodeEdge* root){
 		current = current->next;
 	}
 	printf("\n");
-    fflush(stdout);
+    // fflush(stdout);
 	return;
 }
 
@@ -83,10 +83,10 @@ typedef struct heap{
 
 /**************** Heap *****************/
 // Actually build the min heap
-heap* buildMinHeap() {
+heap* buildMinHeap(int capacity) {
 	heap* minHeap = (heap*)malloc(sizeof(heap));
 	minHeap->size = 0;
-	minHeap->capacity = 0;
+	minHeap->capacity = capacity;
 	minHeap->heap_array = (heapNode**)malloc(minHeap->capacity * sizeof(heapNode*));
 	return minHeap;
 }
@@ -110,7 +110,7 @@ void addNode(int vertex, float weight, heap* init_heap){
 	addNode->vertex = vertex;
 	addNode->weight = weight;
 
-    int iterate_size = (init_heap->size - 1);
+    int iterate_size = (init_heap->size - 1)/2;
 	while(iterate_size > 0 && addNode->weight < init_heap->heap_array[(iterate_size - 1)/2]->weight){
 		init_heap->heap_array[iterate_size] = init_heap->heap_array[(iterate_size - 1)/2]; 
 		iterate_size = (iterate_size - 1)/2;
@@ -161,11 +161,12 @@ void fixHeap(heap* minHeap, int x){
 
 // Pop minimium node
 heapNode* popMin(heap* init_heap){
-
+    printf("BLAHHHH\n");
     if(init_heap->size > 0){
         heapNode *min = init_heap->heap_array[0];
         init_heap->size = init_heap->size - 1;
         init_heap->heap_array[0] = init_heap->heap_array[init_heap->size];
+        printf("before fixing\n");
         fixHeap(init_heap, 0);
         if(init_heap->size <= init_heap->capacity / 2){
             init_heap->heap_array = realloc(init_heap->heap_array, (init_heap->capacity / 2) * sizeof(heapNode));
@@ -174,6 +175,7 @@ heapNode* popMin(heap* init_heap){
         return min;
     }
     else {
+        printf("is it freeing \n");
         free(init_heap);
         return NULL;
     }
@@ -195,9 +197,34 @@ nodeEdge* findCurrNode(int vertex, nodeEdge* init_edge){
 /**************** Prim's Algorithm *****************/
 
 float prim(int numpoints, nodeEdge* edges[numpoints]){
-    printf("check called\n");
-    //initialize minHeap to store all vertices
-	heap* init_heap = buildMinHeap();
+	int parent[numpoints];
+    float key[numpoints];
+    heap* init_heap = buildMinHeap(numpoints);
+
+    for (int i = 1; i < numpoints; i++){
+        parent[i] = -1;
+        key[i] = INT_MAX;
+        init_heap->array[i] = addNode(i, key[i], init_heap);
+        // init_heap->
+    }
+    key[0] = 0
+    init_heap->array[0] = addNode(0, key[0], init_heap);
+    //pos[0]
+
+    init_heap->size = numpoints;
+
+    while(init_heap->size != 0){
+        heapNode* min = popMin(init_heap);
+        int id = init_heap->vertex;
+
+        nodeEdge* crawler = edges[id];
+        while(crawler != NULL){
+            int dest = crawler->next;
+
+            if(isIn)
+        }
+    }
+
 	addNode(0, 0.0, init_heap);
     printf("check add node \n");
     float weights[numpoints];
@@ -249,19 +276,15 @@ float prim(int numpoints, nodeEdge* edges[numpoints]){
 	float tot_weight = 0.0;
 	//float largest_edge_used = 0.0;
 	int largest_index = -3;
-    printf("sup dawg\n");
-	for(int i = 1; i < numpoints; i++){
-        printf("putin \n");
+	for(int i = 0; i < numpoints; i++){
 		if (prev_node[i] < 0){
 			free(init_heap);
             //increase the count of edges not in the mst
 			not_in_mst++;
 			return -1;
 		}
-        printf("putin2 \n");
 		nodeEdge* temp_edge = findCurrNode(prev_node[i], edges[i]);
-		printf("putin3 \n");
-        float temp_weight = temp_edge->weight;
+		float temp_weight = temp_edge->weight;
 		tot_weight += temp_weight;
 	}
 	free(init_heap);
@@ -333,7 +356,7 @@ int main(int argc, char* argv[]){
                     weight_check = 0;
                 }
                 // if dimension == 0, then we randomly assign the weight
-                else if (dimension > 0)
+                else if (dimension == 0)
                 {
                     weight_check = (float)rand() / (float)RAND_MAX;
                 }
@@ -370,7 +393,6 @@ int main(int argc, char* argv[]){
         //     test1 [i] = createAdjList(i);
         // }
 
-        float total = prim(numpoints, edgeArr);
-        printf("%f \n", total);
+        prim(numpoints, edgeArr);
     }
 }
