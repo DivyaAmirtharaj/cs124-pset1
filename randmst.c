@@ -44,6 +44,8 @@ float dist(vertex p1, vertex p2){
 	for(int i = 0; i < p1.dimension; i++){
 		distance += (p1.location[i] - p2.location[i]) * (p1.location[i] - p2.location[i]); 
 	}
+    distance = sqrt(distance);
+    printf("%f \n", distance);
 	return sqrt(distance);
 }
 
@@ -283,75 +285,86 @@ int main(int argc, char *argv[])
     int numpoints = atoi(argv[2]);
     int numtrials = atoi(argv[3]);
     int dimension = atoi(argv[4]);
+    float sumTotal = 0.0;
 
-    // array of length numpoints such that each element in the array is the linked list of edges
-    nodeEdge *edgeArr[numpoints];
-    // store all the points
-    vertex points[numpoints];
 
-    // initialize the adjacency lists
-    for (int i = 0; i < numpoints; i++)
+
+    // start the CLOCK
+    clock_t start = clock();
+
+
+
+    //loop through the algorithm for the number of times we run the trial
+    for (int count = 0; count < numtrials; count++)
     {
-        edgeArr[i] = createAdjList(i);
-    }
+        srand(time(NULL));
+        // array of length numpoints such that each element in the array is the linked list of edges
+        nodeEdge *edgeArr[numpoints];
+        // store all the points
+        vertex points[numpoints];
 
-    if (dimension >= 2 && dimension <= 4)
-    {
-        for (int trial = 0; trial < numtrials; trial++)
+        // initialize the adjacency lists
+        for (int i = 0; i < numpoints; i++)
         {
-            srand(time(NULL));
-            // generate the random locations for the vertices if dimension != 0
-
-            // iterate through every vertex and assign it a "coordinate location"
-            for (int i = 0; i < numpoints; i++)
+            edgeArr[i] = createAdjList(i);
+        }
+        //assign random locations for vertices
+        if (dimension >= 2 && dimension <= 4)
+        {
+            for (int trial = 0; trial < numtrials; trial++)
             {
-                float *loc = malloc(sizeof(float) * dimension);
-                for (int j = 0; j < dimension; j++)
+                // generate the random locations for the vertices if dimension != 0
+
+                // iterate through every vertex and assign it a "coordinate location"
+                for (int i = 0; i < numpoints; i++)
                 {
-                    loc[j] = (float)rand() / (float)RAND_MAX;
+                    float *loc = malloc(sizeof(float) * dimension);
+                    for (int j = 0; j < dimension; j++)
+                    {
+                        loc[j] = (float)rand() / (float)RAND_MAX;
+                    }
+                    points[i].dimension = dimension;
+                    points[i].location = loc;
+                    // for (int a = 0; a < dimension; a++){
+                    //     printf("%f ", points[i].location[a]);
+                    // }
                 }
-                points[i].dimension = dimension;
-                points[i].location = loc;
-                // for (int a = 0; a < dimension; a++){
-                //     printf("%f ", points[i].location[a]);
-                // }
             }
         }
-    }
-    // develop the adjacency list
-    // iterate through each vertex
-    srand(time(NULL));
-    for (int i = 0; i < numpoints; i++)
-    {
-        // for each vertex, go through every other vertex and make an edge
-        // note we only start with the vertex we're currently on and higher index vertices
-        for (int j = i; j < numpoints; j++)
+        // develop the adjacency list
+        // iterate through each vertex
+        for (int i = 0; i < numpoints; i++)
         {
-            float weight_check = 0;
-            // we don't want an edge from one node to the same node
-            if (i == j)
+            // for each vertex, go through every other vertex and make an edge
+            // note we only start with the vertex we're currently on and higher index vertices
+            for (int j = i; j < numpoints; j++)
             {
-                weight_check = 10.0;
-            }
-            // if dimension == 0, then we randomly assign the weight
-            else if (dimension == 0)
-            {
-                weight_check = (float)rand() / (float)RAND_MAX;
-            }
-            // otherwise, find the distances between the points
-            else
-            {
-                weight_check = dist(points[i], points[j]);
-            }
-            // make two edges, one for outgoing and one ingoing since this is an undirected graph
-            //  printf('%f', weight_check);
-            if (weight_check < 1.0)
-            {
-                elIntoList(i, weight_check, edgeArr[j]);
-                elIntoList(j, weight_check, edgeArr[i]);
+                float weight_check = 0;
+                // we don't want an edge from one node to the same node
+                if (i == j)
+                {
+                    weight_check = 10.0;
+                }
+                // if dimension == 0, then we randomly assign the weight
+                else if (dimension == 0)
+                {
+                    weight_check = (float) rand() / (float)RAND_MAX;
+                }
+                // otherwise, find the distances between the points
+                else
+                {
+                    weight_check = dist(points[i], points[j]);
+                }
+                // make two edges, one for outgoing and one ingoing since this is an undirected graph
+                //  printf('%f', weight_check);
+                if (weight_check < 1.0)
+                {
+                    elIntoList(i, weight_check, edgeArr[j]);
+                    elIntoList(j, weight_check, edgeArr[i]);
+                }
             }
         }
-    }
+    
 
     // for (int i = 0; i < numpoints; i++)
     // {
@@ -372,5 +385,16 @@ int main(int argc, char *argv[])
     // }
 
     float total = prim(numpoints, edgeArr);
-    printf("%f \n", total);
+    sumTotal += total;
+
+    // printf("Weight Size for trial %d: %f \n", (count + 1), total);
+    }
+    clock_t finish = clock();
+    float averageTime = (float) (finish - start) / CLOCKS_PER_SEC;
+    averageTime /= (float) numtrials;
+    float averageTotal = sumTotal / (float) numtrials;
+    float averageEdge = averageTotal / numpoints;
+    printf("Average Total Size: %f \n", averageTotal);    
+    printf("Average Edge Size in MST: %f \n", averageEdge);
+    printf("Average Time: %f\n", averageTime);    
 }
