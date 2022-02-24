@@ -16,7 +16,9 @@
         "bitset": "c",
         "utility": "c",
         "__node_handle": "c",
-        "iterator": "c"
+        "iterator": "c",
+        "limits.h": "c",
+        "typeinfo": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

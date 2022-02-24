@@ -69,7 +69,6 @@ void fixHeap(heap* minHeap, int x){
 	int left = 2*x+1;
     int right = 2*x+2;
     int smallest = x;
-    int parent = (x-1)/2;
 
 	if (left < minHeap->size && minHeap->heap_array[left]->weight < minHeap->heap_array[smallest]->weight)
 		smallest = left;
