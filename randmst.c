@@ -60,8 +60,8 @@ void print_lst(nodeEdge* root){
 		print_node(current);
 		current = current->next;
 	}
-	printf("\n");
-    fflush(stdout);
+	// printf("\n");
+    // fflush(stdout);
 	return;
 }
 
@@ -195,11 +195,11 @@ nodeEdge* findCurrNode(int vertex, nodeEdge* init_edge){
 /**************** Prim's Algorithm *****************/
 
 float prim(int numpoints, nodeEdge* edges[numpoints]){
-    printf("check called\n");
+    // printf("check called\n");
     //initialize minHeap to store all vertices
 	heap* init_heap = buildMinHeap();
 	addNode(0, 0.0, init_heap);
-    printf("check add node \n");
+    // printf("check add node \n");
     float weights[numpoints];
 	int prev_node[numpoints];
 	uint8_t diff[numpoints];
@@ -210,7 +210,7 @@ float prim(int numpoints, nodeEdge* edges[numpoints]){
 		prev_node[i] = INT_MIN;
 		diff[i] = 1;
 	}
-    printf("initialize array \n");
+    // printf("initialize array \n");
 	weights[0] = 0;
     prev_node[0] = 0;
     // initialize adjacency list
@@ -218,18 +218,17 @@ float prim(int numpoints, nodeEdge* edges[numpoints]){
     int size;
     size = 1;
 	while(init_heap->size > 0){
-        printf("while start \n");
-        int temp = init_heap->size;
-        printf("%i\n", temp);
+        // printf("while start \n");
+        // printf("%i\n", temp);
 		heapNode* min = popMin(init_heap);
-        printf("plsss\n");
+        // printf("plsss\n");
 		init_heap->size = init_heap->size - 1;
 		
-        printf("intermediate \n");
+        // printf("intermediate \n");
 		int v = min->vertex;
 		diff[v] = 0;
 		nodeEdge* node_curr = edges[v]->next;
-        printf("problem 1\n");
+        // printf("problem 1\n");
 		while(node_curr){
 			int x = node_curr->vertex;
 			if(diff[x] && (node_curr->weight < weights[x])){
@@ -239,28 +238,25 @@ float prim(int numpoints, nodeEdge* edges[numpoints]){
 				size = size+1;
 			}
 			node_curr = node_curr->next;
-            printf("problem 2\n");
+            // printf("problem 2\n");
 		}
 		free(min);
-        printf("problem 3\n");
+        // printf("problem 3\n");
 	}
-    printf("after while \n");
+    // printf("after while \n");
     int not_in_mst = 0;
 	float tot_weight = 0.0;
 	//float largest_edge_used = 0.0;
 	int largest_index = -3;
-    printf("sup dawg\n");
+    // printf("sup dawg\n");
 	for(int i = 1; i < numpoints; i++){
-        printf("putin \n");
 		if (prev_node[i] < 0){
 			free(init_heap);
             //increase the count of edges not in the mst
 			not_in_mst++;
 			return -1;
 		}
-        printf("putin2 \n");
 		nodeEdge* temp_edge = findCurrNode(prev_node[i], edges[i]);
-		printf("putin3 \n");
         float temp_weight = temp_edge->weight;
 		tot_weight += temp_weight;
 	}
@@ -270,39 +266,42 @@ float prim(int numpoints, nodeEdge* edges[numpoints]){
 
 /************* End of Prim's Algorithm *************/
 
-int main(int argc, char* argv[]){
-	if(argc != 5){
-		printf("Please add inputs: flag, numpoints, numtrials, dimension\n");
-		return 1;
-	}
-	if(atoi(argv[4]) < 0){
-		printf("Dimension should be a positive integer\n");
-		return 1;
-	}
-	// Set command line inputs
-	int flag = atoi(argv[1]);
-	int numpoints = atoi(argv[2]);
-	int numtrials = atoi(argv[3]);
-	int dimension = atoi(argv[4]);
+int main(int argc, char *argv[])
+{
+    if (argc != 5)
+    {
+        printf("Please add inputs: flag, numpoints, numtrials, dimension\n");
+        return 1;
+    }
+    if (atoi(argv[4]) < 0)
+    {
+        printf("Dimension should be a positive integer\n");
+        return 1;
+    }
+    // Set command line inputs
+    int flag = atoi(argv[1]);
+    int numpoints = atoi(argv[2]);
+    int numtrials = atoi(argv[3]);
+    int dimension = atoi(argv[4]);
 
+    // array of length numpoints such that each element in the array is the linked list of edges
+    nodeEdge *edgeArr[numpoints];
+    // store all the points
+    vertex points[numpoints];
 
-    //array of length numpoints such that each element in the array is the linked list of edges
-    nodeEdge* edgeArr [numpoints];
-    //store all the points
-    vertex points [numpoints];
+    // initialize the adjacency lists
+    for (int i = 0; i < numpoints; i++)
+    {
+        edgeArr[i] = createAdjList(i);
+    }
 
-    //initialize the adjacency lists
-    for(int i = 0; i < numpoints; i++){
-		edgeArr[i] = createAdjList(i);
-	}
-
-    
-
-    for (int trial = 0; trial < numtrials; trial++){
-        srand(time(NULL));
-        // generate the random locations for the vertices if dimension != 0
-        if (dimension >= 2 && dimension <= 4)
+    if (dimension >= 2 && dimension <= 4)
+    {
+        for (int trial = 0; trial < numtrials; trial++)
         {
+            srand(time(NULL));
+            // generate the random locations for the vertices if dimension != 0
+
             // iterate through every vertex and assign it a "coordinate location"
             for (int i = 0; i < numpoints; i++)
             {
@@ -318,59 +317,60 @@ int main(int argc, char* argv[]){
                 // }
             }
         }
-        // develop the adjacency list
-        // iterate through each vertex
-        for (int i = 0; i < numpoints; i++)
+    }
+    // develop the adjacency list
+    // iterate through each vertex
+    srand(time(NULL));
+    for (int i = 0; i < numpoints; i++)
+    {
+        // for each vertex, go through every other vertex and make an edge
+        // note we only start with the vertex we're currently on and higher index vertices
+        for (int j = i; j < numpoints; j++)
         {
-            // for each vertex, go through every other vertex and make an edge
-            // note we only start with the vertex we're currently on and higher index vertices
-            for (int j = i; j < numpoints; j++)
+            float weight_check = 0;
+            // we don't want an edge from one node to the same node
+            if (i == j)
             {
-                float weight_check = 0;
-                // we don't want an edge from one node to the same node
-                if (i == j)
-                {
-                    weight_check = 0;
-                }
-                // if dimension == 0, then we randomly assign the weight
-                else if (dimension > 0)
-                {
-                    weight_check = (float)rand() / (float)RAND_MAX;
-                }
-                // otherwise, find the distances between the points
-                else
-                {
-                    weight_check = dist(points[i], points[j]);
-                }
-                // make two edges, one for outgoing and one ingoing since this is an undirected graph
-                //  printf('%f', weight_check);
-                if (weight_check != 0)
-                {
-                    elIntoList(i, weight_check, edgeArr[j]);
-                    elIntoList(j, weight_check, edgeArr[i]);
-                }
+                weight_check = 10.0;
+            }
+            // if dimension == 0, then we randomly assign the weight
+            else if (dimension == 0)
+            {
+                weight_check = (float)rand() / (float)RAND_MAX;
+            }
+            // otherwise, find the distances between the points
+            else
+            {
+                weight_check = dist(points[i], points[j]);
+            }
+            // make two edges, one for outgoing and one ingoing since this is an undirected graph
+            //  printf('%f', weight_check);
+            if (weight_check < 1.0)
+            {
+                elIntoList(i, weight_check, edgeArr[j]);
+                elIntoList(j, weight_check, edgeArr[i]);
             }
         }
-
-        for (int i = 0; i < numpoints; i++)
-        {
-            printf("Edges from %d: \n", i);
-            print_lst(edgeArr[i]);
-        }
-        printf("Hello World\n");
-
-        // typedef struct nodeEdge{
-        //     int vertex;
-        //     float weight;
-        //     struct nodeEdge* next;
-        // } nodeEdge;
-
-        // nodeEdge* test1 [3];
-        // for (int i = 0; i < 3; i++){
-        //     test1 [i] = createAdjList(i);
-        // }
-
-        float total = prim(numpoints, edgeArr);
-        printf("%f \n", total);
     }
+
+    // for (int i = 0; i < numpoints; i++)
+    // {
+    //     printf("Edges from %d: \n", i);
+    //     print_lst(edgeArr[i]);
+    // }
+    // printf("Hello World\n");
+
+    // typedef struct nodeEdge{
+    //     int vertex;
+    //     float weight;
+    //     struct nodeEdge* next;
+    // } nodeEdge;
+
+    // nodeEdge* test1 [3];
+    // for (int i = 0; i < 3; i++){
+    //     test1 [i] = createAdjList(i);
+    // }
+
+    float total = prim(numpoints, edgeArr);
+    printf("%f \n", total);
 }
