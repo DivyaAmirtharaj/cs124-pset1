@@ -270,13 +270,13 @@ float prim(int numpoints, nodeEdge* edges[numpoints]){
 float bound(int numpoints, int dimension) {
     if (numpoints > 2048) {
         if(dimension == 0)
-            return exp(1.65) * pow(numpoints, -.9);
+            return powf(numpoints, -1.0 / 2);
         else if(dimension == 2)
-            return powf(numpoints, -1.0 / numpoints);
+            return powf(numpoints, -1.0 / 3);
         else if(dimension == 3)
             return powf(numpoints, -1.0 / 4);
         else if(dimension == 4)
-            return powf(numpoints, -1.0 / 6);
+            return powf(numpoints, -1.0 / 5);
         else
             return INT_MAX;
         return 1 - powf(1 - powf(0.999, 1.0 / (float) numpoints), 1.0 / (float) (numpoints - 1) );
