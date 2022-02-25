@@ -270,15 +270,16 @@ float prim(int numpoints, nodeEdge* edges[numpoints]){
 float bound(int numpoints, int dimension) {
     if (numpoints > 2048) {
         if(dimension == 0)
-            return powf(numpoints, -1.0 / 1.1);
+            return exp(1.65) * pow(numpoints, -.9);
         else if(dimension == 2)
-            return powf(numpoints, -1.0 / 3);
+            return powf(numpoints, -1.0 / numpoints);
         else if(dimension == 3)
             return powf(numpoints, -1.0 / 4);
         else if(dimension == 4)
-            return powf(numpoints, -1.0 / 5);
+            return powf(numpoints, -1.0 / 6);
         else
             return INT_MAX;
+        return 1 - powf(1 - powf(0.999, 1.0 / (float) numpoints), 1.0 / (float) (numpoints - 1) );
     }
     else {
         return numpoints;
@@ -375,7 +376,7 @@ int main(int argc, char *argv[])
                 }
                 // make two edges, one for outgoing and one ingoing since this is an undirected graph
                 //  printf('%f', weight_check);
-                if (weight_check < 1)
+                if (weight_check < upper_bound)
                 {
                     elIntoList(i, weight_check, edgeArr[j]);
                     elIntoList(j, weight_check, edgeArr[i]);
