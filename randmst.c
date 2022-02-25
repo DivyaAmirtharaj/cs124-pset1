@@ -45,7 +45,7 @@ float dist(vertex p1, vertex p2){
 		distance += (p1.location[i] - p2.location[i]) * (p1.location[i] - p2.location[i]); 
 	}
     distance = sqrt(distance);
-    printf("%f \n", distance);
+    // printf("%f \n", distance);
 	return sqrt(distance);
 }
 
@@ -286,6 +286,8 @@ int main(int argc, char *argv[])
     int numtrials = atoi(argv[3]);
     int dimension = atoi(argv[4]);
     float sumTotal = 0.0;
+
+    float threshold = 1 - pow(1 - pow(0.9999, 1.0 / (float) numpoints), 1.0 / ((float) numpoints - 1.0));
 
 
 
