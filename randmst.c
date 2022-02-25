@@ -46,7 +46,7 @@ float dist(vertex p1, vertex p2){
 	}
     distance = sqrt(distance);
     // printf("%f \n", distance);
-	return sqrt(distance);
+	return distance;
 }
 
 void print_node(nodeEdge* n){
@@ -267,6 +267,24 @@ float prim(int numpoints, nodeEdge* edges[numpoints]){
 }
 
 /************* End of Prim's Algorithm *************/
+float bound(int numpoints, int dimension) {
+    if (numpoints > 2048) {
+        if(dimension == 0)
+            return powf(numpoints, -1.0 / 1.1);
+        else if(dimension == 2)
+            return powf(numpoints, -1.0 / 3);
+        else if(dimension == 3)
+            return powf(numpoints, -1.0 / 4);
+        else if(dimension == 4)
+            return powf(numpoints, -1.0 / 5);
+        else
+            return INT_MAX;
+    }
+    else {
+        return numpoints;
+    }
+    
+}
 
 int main(int argc, char *argv[])
 {
@@ -287,9 +305,7 @@ int main(int argc, char *argv[])
     int dimension = atoi(argv[4]);
     float sumTotal = 0.0;
 
-    float threshold = 1 - pow(1 - pow(0.9999, 1.0 / (float) numpoints), 1.0 / ((float) numpoints - 1.0));
-
-
+    float upper_bound = bound(numpoints, dimension);
 
     // start the CLOCK
     clock_t start = clock();
@@ -359,37 +375,21 @@ int main(int argc, char *argv[])
                 }
                 // make two edges, one for outgoing and one ingoing since this is an undirected graph
                 //  printf('%f', weight_check);
-                if (weight_check < 1.0)
+                if (weight_check < 1)
                 {
                     elIntoList(i, weight_check, edgeArr[j]);
                     elIntoList(j, weight_check, edgeArr[i]);
                 }
             }
         }
-    
 
-    // for (int i = 0; i < numpoints; i++)
-    // {
-    //     printf("Edges from %d: \n", i);
-    //     print_lst(edgeArr[i]);
-    // }
-    // printf("Hello World\n");
-
-    // typedef struct nodeEdge{
-    //     int vertex;
-    //     float weight;
-    //     struct nodeEdge* next;
-    // } nodeEdge;
-
-    // nodeEdge* test1 [3];
-    // for (int i = 0; i < 3; i++){
-    //     test1 [i] = createAdjList(i);
-    // }
-
-    float total = prim(numpoints, edgeArr);
-    sumTotal += total;
+        float total = prim(numpoints, edgeArr);
+        sumTotal += total;
 
     // printf("Weight Size for trial %d: %f \n", (count + 1), total);
+    for(int i = 0; i < numpoints; i++){
+		free(edgeArr[i]);
+	}
     }
     clock_t finish = clock();
     float averageTime = (float) (finish - start) / CLOCKS_PER_SEC;
